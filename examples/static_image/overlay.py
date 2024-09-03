@@ -26,28 +26,30 @@ from OpenGL.GL import (
     GL_BLEND,
 )
 from PIL import Image
-import json
+import yaml
 
 
 class Overlay:
-    def __init__(self, config_file="config.json"):
+    def __init__(self, config_file):
         self.image_visibility = True
         self.texture_id = None
         self.config_file = config_file
         self.keybind = self.load_keybind()
 
+    def save_keybind(self, key):
+        with open(self.config_file, "w") as f:
+            yaml.dump({"keybind": key}, f)
+        self.keybind = key
+
     def load_keybind(self):
         try:
             with open(self.config_file, "r") as f:
-                config = json.load(f)
-                return config.get("keybind", glfw.KEY_KP_6)  # Default to Numpad 6
+                config = yaml.safe_load(f)
+                return config.get(
+                    "keybind", glfw.KEY_KP_6
+                )  # Default to Numpad 6 as keycode
         except FileNotFoundError:
             return glfw.KEY_KP_6
-
-    def save_keybind(self, key):
-        with open(self.config_file, "w") as f:
-            json.dump({"keybind": key}, f)
-        self.keybind = key
 
     def key_callback(self, window, key, scancode, action, mods):
         if key == self.keybind and action == glfw.PRESS:
